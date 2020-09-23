@@ -1,0 +1,143 @@
+import sys
+import os
+import time
+import paramiko
+import tkinter as tk
+#from tkinter import *
+#from tkinter.ttk import *
+#from tkinter import messagebox
+#import tkMessageBox as messagebox
+username = "user"
+password = "pass"
+#enablePass = "enablepass"
+
+## You can either directly paste the script into the button definition or you can just call the python file, still working on the user prompt
+
+def noshut():
+    os.system('python noshut.py')
+def listINTSTATUS():
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+# NEVER TOUCH PORT 1 OR 49 <-------------------- personal comment
+# Connect to each IP in your file
+# The Path should be to a .txt file that has all cisco equipment IP's w/SSH
+    with open(r"file path") as ip_file:
+        for ip_address in ip_file:
+              ssh_client.connect(hostname=ip_address,username=username,password=password)
+
+              print ("Successful connection", ip_address)
+              remote_connection = ssh_client.invoke_shell()
+              time.sleep(1)
+              remote_connection.send("enable\n")
+              time.sleep(1)
+              remote_connection.send("enable pass\n")
+              time.sleep(1)
+              remote_connection.send("term len 0\n")
+              time.sleep(1)
+              remote_connection.send("show interface status\n")
+              time.sleep(1)
+              remote_connection.send("exit\n")
+              time.sleep(1)
+              output = remote_connection.recv(65535)          
+              Format = output.decode(encoding='UTF-8')
+              print(Format)
+              print ("Config Edited Successfully")
+              ssh_client.close
+
+
+def shut():
+    os.system('python shut.py')
+def changeVLANACCESS():
+    os.system('python VLAN-ACCESS-CHANGE.py')
+def changeVLANTRUNK():
+    os.system('python VLAN-TRUNK-Change.py')
+def descriptionPORT():
+    os.system('python PORT-DESCRIPTION.py')
+def backup():
+    os.system('python backup_cisco_routerswitch.py')
+
+root = tk.Tk()
+frame = tk.Frame(root)
+frame.pack()
+
+
+button = tk.Button(frame, 
+                   text="QUIT", 
+                   fg="red",
+                   bg="black",
+                   width=10,
+                   height=10,
+                   command=quit)
+button.pack(side=tk.LEFT)
+
+# Run Backups on  all IPs listed on file
+backup = tk.Button(frame,
+                   text="Backup",
+                   fg="white",
+                   bg="black",
+                   width=10,
+                   height=10,
+                   command=backup)
+backup.pack(side=tk.LEFT)
+
+# Open Ports on Switches listed on IP text
+noshut = tk.Button(frame,
+                   text="Open Port(s)",
+                   fg="white",
+                   bg="black",
+                   #width=10,
+                   height=10,
+                   command=noshut)
+noshut.pack(side=tk.LEFT)
+
+# Shut Ports on Switches listed on IP text
+shut = tk.Button(frame,
+                   text="Shut Port(s)",
+                   fg="white",
+                   bg="black",
+                   #width=10,
+                   height=10,
+                   command=shut)
+shut.pack(side=tk.LEFT)
+
+# Change VLAN ACCESS ID on Ports listed on IP text
+changeVLANACCESS = tk.Button(frame,
+                   text="Change VLAN Access Port(s)",
+                   fg="white",
+                   bg="black",
+                   #width=10,
+                   height=10,
+                   command=changeVLANACCESS)
+changeVLANACCESS.pack(side=tk.LEFT)
+
+## ADD VLAN TRUNK ID on Trunk Port (1/0/49) listed on IP text
+changeVLANTRUNK = tk.Button(frame,
+                   text="Change VLAN Trunk Port(s)",
+                   fg="white",
+                   bg="black",
+                   #width=10,
+                   height=10,
+                   command=changeVLANTRUNK)
+changeVLANTRUNK.pack(side=tk.LEFT)
+
+# ADD Description to Ports listed on IP text
+descriptionPORT = tk.Button(frame,
+                   text="Change Port(s) Description",
+                   fg="white",
+                   bg="black",
+                   #width=10,
+                   height=10,
+                   command=descriptionPORT)
+descriptionPORT.pack(side=tk.LEFT)
+
+# List status of all interfaces within text file
+listINTSTATUS = tk.Button(frame,
+                   text="List Interface(s) Status",
+                   fg="white",
+                   bg="black",
+                   #width=10,
+                   height=10,
+                   command=listINTSTATUS)
+listINTSTATUS.pack(side=tk.LEFT)
+
+root.mainloop()
