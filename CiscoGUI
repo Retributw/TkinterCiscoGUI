@@ -14,7 +14,46 @@ password = "pass"
 ## You can either directly paste the script into the button definition or you can just call the python file, still working on the user prompt
 
 def noshut():
-    os.system('python noshut.py')
+
+if input("are you sure? (y/n)") != "y":
+      exit()
+      
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # NEVER TOUCH PORT 1 OR 49 <--------------------
+    # Connect to each IP in your file
+    # The Path should be to a .txt file that has all cisco equipment IP's w/SSH
+    with open(r"file path") as ip_file:
+        for ip_address in ip_file:
+              ssh_client.connect(hostname=ip_address,username=username,password=password)
+
+              print ("Successful connection", ip_address) # <- how do I add user prompt for them to choose which IPs or hostnames for switch
+              remote_connection = ssh_client.invoke_shell()
+              time.sleep(1)
+              remote_connection.send("enable\n")
+              time.sleep(1)
+              remote_connection.send("enablepass\n")
+              time.sleep(1)
+              remote_connection.send("conf t\n")
+              time.sleep(1)
+              #change the range as needed
+              #g1/0/    <- incase you need to add multiple ports can only do 8 different ports at a time
+              remote_connection.send("interface range g1/0/1-48\n") # <- how do I add user prompt to this? so they can give g1/0/3, g1/0/5-8, g1/0/34, etc
+              time.sleep(3)
+              #Change this to "shutdown" to open port ranges
+              remote_connection.send("no shutdown\n")
+              time.sleep(1)
+              remote_connection.send("exit\n")
+              time.sleep(1)
+              remote_connection.send("exit\n")
+              time.sleep(1)
+              remote_connection.send("wr\n")
+              time.sleep(5)
+              output = remote_connection.recv(65535)          
+              Format = output.decode(encoding='UTF-8')
+              print(Format)
+              print ("Config Edited Successfully")
+              ssh_client.close
 def listINTSTATUS():
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
